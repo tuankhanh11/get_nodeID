@@ -1,5 +1,3 @@
-#!/bin/bash
-
 curl -X POST "https://beta.orchestrator.nexus.xyz/nodes" \
 >   -H "Accept: */*" \
 >   -H "Content-Type: application/octet-stream" \
