@@ -1,58 +1,43 @@
-curl -X POST "https://beta.orchestrator.nexus.xyz/nodes" \
->   -H "Accept: */*" \
->   -H "Content-Type: application/octet-stream" \
->   --data-raw $'\u0008\u0001\u0012$1c298d0a-85a8-4244-b1b5-42617f6d1561' -v
-Note: Unnecessary use of -X or --request, POST is already inferred.
-*   Trying 34.30.84.32:443...
-* TCP_NODELAY set
-* Connected to beta.orchestrator.nexus.xyz (34.30.84.32) port 443 (#0)
-* ALPN, offering h2
-* ALPN, offering http/1.1
-* successfully set certificate verify locations:
-*   CAfile: /etc/ssl/certs/ca-certificates.crt
-  CApath: /etc/ssl/certs
-* TLSv1.3 (OUT), TLS handshake, Client hello (1):
-* TLSv1.3 (IN), TLS handshake, Server hello (2):
-* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
-* TLSv1.3 (IN), TLS handshake, Certificate (11):
-* TLSv1.3 (IN), TLS handshake, CERT verify (15):
-* TLSv1.3 (IN), TLS handshake, Finished (20):
-* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
-* TLSv1.3 (OUT), TLS handshake, Finished (20):
-* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
-* ALPN, server accepted to use http/1.1
-* Server certificate:
-*  subject: CN=beta.orchestrator.nexus.xyz
-*  start date: Dec 13 00:00:00 2024 GMT
-*  expire date: Dec 13 23:59:59 2025 GMT
-*  subjectAltName: host "beta.orchestrator.nexus.xyz" matched cert's "beta.orchestrator.nexus.xyz"
-*  issuer: C=US; O=DigiCert Inc; OU=www.digicert.com; CN=GeoTrust TLS RSA CA G1
-*  SSL certificate verify ok.
-> POST /nodes HTTP/1.1
-> Host: beta.orchestrator.nexus.xyz
-> User-Agent: curl/7.68.0
-> Accept: */*
-> Content-Type: application/octet-stream
-> Content-Length: 40
->
-* upload completely sent off: 40 out of 40 bytes
-* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
-* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
-* old SSL session ID is stale, removing
-* Mark bundle as not supporting multiuse
-< HTTP/1.1 504 Gateway Time-out
-< Server: nginx/1.27.4
-< Date: Thu, 20 Feb 2025 10:13:23 GMT
-< Content-Type: text/html
-< Content-Length: 167
-< Connection: keep-alive
-<
-<html>
-<head><title>504 Gateway Time-out</title></head>
-<body>
-<center><h1>504 Gateway Time-out</h1></center>
-<hr><center>nginx/1.27.4</center>
-</body>
-</html>
-* Connection #0 to host beta.orchestrator.nexus.xyz left intact
-vm@sdvxczf:~$
+#!/bin/bash
+
+# URL API cần gọi
+URL="https://beta.orchestrator.nexus.xyz/nodes"
+
+# Dữ liệu gửi trong request
+DATA_RAW=$'\u0008\u0001\u0012$1c298d0a-85a8-4244-b1b5-42617f6d1561'
+
+# Headers
+HEADERS=(
+  -H "Accept: */*"
+  -H "Accept-Language: en,en-US;q=0.9,vi;q=0.8"
+  -H "Connection: keep-alive"
+  -H "Content-Type: application/octet-stream"
+  -H "Origin: https://app.nexus.xyz"
+  -H "Referer: https://app.nexus.xyz/"
+  -H "Sec-Fetch-Dest: empty"
+  -H "Sec-Fetch-Mode: cors"
+  -H "Sec-Fetch-Site: same-site"
+  -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
+  -H "sec-ch-ua: \"Not(A:Brand\";v=\"99\", \"Google Chrome\";v=\"133\", \"Chromium\";v=\"133\""
+  -H "sec-ch-ua-mobile: ?0"
+  -H "sec-ch-ua-platform: \"macOS\""
+)
+
+# Vòng lặp thử tối đa 100 lần
+for ((i=1; i<=100; i++)); do
+  echo "Try #$i"
+
+  # Gửi request bằng curl
+  RESPONSE=$(curl -s -X POST "${URL}" "${HEADERS[@]}" --data-raw "$DATA_RAW")
+
+  echo "Response:"
+  echo "$RESPONSE"
+
+  # Kiểm tra nếu không có lỗi "Gateway", thì dừng vòng lặp
+  if [[ "$RESPONSE" != *"Gateway"* ]]; then
+    echo "Success!"
+    break
+  fi
+
+  sleep 1
+done
